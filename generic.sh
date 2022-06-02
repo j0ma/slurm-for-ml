@@ -9,8 +9,18 @@
 
 set -e # fail fully on first line failure
 
-# Customize this line to point to conda installation
-path_to_conda="./miniconda3"
+# Change this to specify what conda env to use by default
+default_conda_env_name="isi"
+
+# Alternatively specify using --conda-env as the first cmdline arg
+if [ "${first_arg}" = "--conda-env" ] 
+then
+    shift 1 && conda_env_name=${1} && shift 1
+    JOB_CMD="${@}"
+else
+    conda_env_name="${default_conda_env_name}"
+fi
+
 
 echo "Running on $(hostname)"
 
@@ -60,11 +70,8 @@ then
     # Since this is a destructive action it is not on by default
 fi
 
-# Use this line if you need to create the environment first on a machine
-# ./run_locked.sh ${path_to_conda}/bin/conda-env update -f environment.yml
-
 # Activate the environment
-source ${path_to_conda}/bin/activate example-environment
+conda activate ${conda_env_name}
 
 # Train the model
 srun python $JOB_CMD
