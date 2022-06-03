@@ -19,6 +19,7 @@ eval "$(conda shell.bash hook)"
 default_conda_env_name="isi"
 
 # Alternatively specify using --conda-env as the first cmdline arg
+first_arg=$1
 if [ "${first_arg}" = "--conda-env" ] 
 then
     shift 1 && conda_env_name=${1} && shift 1
@@ -82,6 +83,9 @@ fi
 
 # Activate the environment
 conda activate ${conda_env_name}
+
+# Info about conda env for debugging purposes
+conda info
 
 # Train the model
 srun python $JOB_CMD
