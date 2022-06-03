@@ -6,8 +6,14 @@
 
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1
+#SBATCH --partition=debug
 
 set -e # fail fully on first line failure
+
+module purge
+module load anaconda3
+
+eval "$(conda shell.bash hook)"
 
 # Change this to specify what conda env to use by default
 default_conda_env_name="isi"
@@ -41,13 +47,14 @@ else
     JOB_CMD=$(head -n ${SLURM_ARRAY_TASK_ID} "$1" | tail -1)
 fi
 
-# Find what was passed to --output_folder
-regexp="--output_folder\s+(\S+)"
+# Find what was passed to --job-output-folder
+regexp="--job-output-folder\s+(\S+)"
 if [[ $JOB_CMD =~ $regexp ]]
 then
     JOB_OUTPUT=${BASH_REMATCH[1]}
+    JOB_CMD=$(echo $JOB_CMD | sed -E "s/${regexp}//g")
 else
-    echo "Error: did not find a --output_folder argument"
+    echo "Error: did not find a --job-output-folder argument"
     exit 1
 fi
 
@@ -68,6 +75,9 @@ then
     # echo "Removing current output before continuing"
     # rm -r "$JOB_OUTPUT"
     # Since this is a destructive action it is not on by default
+else
+    # If the folder doesn't exist yet, create it
+    mkdir -vp "${JOB_OUTPUT}"
 fi
 
 # Activate the environment
